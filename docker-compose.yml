@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: mychat_backend
+    ports:
+      - "6002:6002"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - PORT=6002
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: mychat_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:6002
+    depends_on:
+      - backend
+    restart: always
