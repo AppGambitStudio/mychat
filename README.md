@@ -125,7 +125,7 @@ The frontend will run on `http://localhost:3000`.
 
 ## 🗄 Database & Migrations
 
-The project uses **SQLite** for simplicity and portability. The database file is located at `backend/dev.db`.
+The project uses **Postgres** for simplicity and portability. The database file is located at `backend/dev.db`.
 
 ### Schema
 -   **Users**: Authentication and account details.

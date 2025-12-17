@@ -13,13 +13,19 @@ services:
       - PORT=6002
       - JWT_SECRET=${JWT_SECRET}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=host.docker.internal
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
     restart: always
 
   frontend:
     build: ./frontend
     container_name: mychat_frontend
     ports:
-      - "3000:3000"
+      - "6001:6001"
     volumes:
       - ./frontend:/app
       - /app/node_modules

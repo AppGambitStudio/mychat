@@ -101,9 +101,9 @@ ChatSpace.init(
             type: DataTypes.JSONB,
             defaultValue: {
                 model: "gpt-3.5-turbo",
-                temperature: 0.7,
-                maxTokens: 500,
-                systemPrompt: "You are a helpful assistant."
+                temperature: 1,
+                maxTokens: 1500,
+                systemPrompt: "You are a helpful AI assistant for a specific knowledge base."
             },
         },
         message_count: {

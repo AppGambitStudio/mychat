@@ -96,6 +96,8 @@ Instructions:
             { role: 'user', content: message },
         ];
 
+        console.log(messages);
+
         const aiResponse = await generateChatResponse(messages);
 
         // 6. Store Assistant Message
