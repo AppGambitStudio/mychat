@@ -1,21 +1,19 @@
+import { RecursiveCharacterTextSplitter } from '../utils/textSplitter';
 import DocumentChunk from '../models/DocumentChunk';
 import { generateEmbedding } from './aiService';
-import { sequelize } from '../config/database';
-import { QueryTypes } from 'sequelize';
 
 export const processAndStoreDocument = async (
     documentId: string,
     chatSpaceId: string,
     content: string
 ) => {
-    // 1. Split content into chunks (simple splitting for now)
-    const chunkSize = 1000;
-    const overlap = 200;
-    const chunks: string[] = [];
+    // 1. Split content using RecursiveCharacterTextSplitter
+    const splitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 200
+    });
 
-    for (let i = 0; i < content.length; i += chunkSize - overlap) {
-        chunks.push(content.substring(i, i + chunkSize));
-    }
+    const chunks = await splitter.splitText(content);
 
     // 2. Generate embeddings and store
     for (let i = 0; i < chunks.length; i++) {
