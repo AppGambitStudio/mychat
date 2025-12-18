@@ -8,6 +8,33 @@ import Settings from '../models/Settings';
 import axios from 'axios';
 import { logEvent } from '../services/analyticsService';
 
+const checkDomainRestriction = (chatSpace: any, req: Request) => {
+    const allowedDomains = chatSpace.widget_config?.allowedDomains;
+
+    // If no domains are configured, allow all
+    if (!allowedDomains || !Array.isArray(allowedDomains) || allowedDomains.length === 0) {
+        return true;
+    }
+
+    const origin = req.get('Origin');
+    const referer = req.get('Referer');
+
+    // Check Origin (exact match)
+    if (origin && allowedDomains.some(domain => origin === domain || origin === `https://${domain}` || origin === `http://${domain}`)) {
+        return true;
+    }
+
+    // Check Referer (starts with)
+    if (referer && allowedDomains.some(domain => referer.startsWith(domain) || referer.startsWith(`https://${domain}`) || referer.startsWith(`http://${domain}`))) {
+        return true;
+    }
+
+    // In dev mode (localhost), we might want to be lenient or explicitly allow localhost if configured.
+    // Ideally, user should add 'localhost' to allowedDomains if testing locally.
+
+    return false;
+};
+
 export const handleChat = async (req: Request, res: Response) => {
     try {
         const { slug } = req.params;
@@ -17,6 +44,11 @@ export const handleChat = async (req: Request, res: Response) => {
         const chatSpace = await ChatSpace.findOne({ where: { endpoint_slug: slug } });
         if (!chatSpace) {
             return res.status(404).json({ error: 'Chat space not found' });
+        }
+
+        // Security: Check Domain Restriction
+        if (!checkDomainRestriction(chatSpace, req)) {
+            return res.status(403).json({ error: 'Domain not authorized' });
         }
 
         // 2. Get or Create Conversation
@@ -139,11 +171,16 @@ export const getWidgetConfig = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Chat space not found' });
         }
 
+        // Security: Check Domain Restriction
+        if (!checkDomainRestriction(chatSpace, req)) {
+            return res.status(403).json({ error: 'Domain not authorized' });
+        }
+
         res.json({
             id: chatSpace.id,
             name: chatSpace.name,
             status: chatSpace.widget_status || 'testing', // Expose status
-            // Future: Add branding config here (colors, logo, etc.)
+            widget_config: chatSpace.widget_config || {}, // Expose widget config
         });
     } catch (error) {
         console.error(error);

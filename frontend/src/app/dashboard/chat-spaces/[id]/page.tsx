@@ -43,6 +43,15 @@ interface ChatSpace {
     name: string;
     endpoint_slug: string;
     api_key: string;
+    widget_config?: {
+        theme: string;
+        primaryColor: string;
+        position: 'bottom-right' | 'bottom-left' | 'bottom-center' | 'top-right' | 'top-left' | 'top-center';
+        allowedDomains?: string[];
+        launcherType?: 'icon' | 'text';
+        launcherText?: string;
+        width?: 'small' | 'medium' | 'large';
+    };
     widget_status?: 'testing' | 'live' | 'maintenance';
     last_processed_at?: string;
     data_usage_bytes?: number;
@@ -468,7 +477,7 @@ export default function ChatSpaceDetailPage() {
                     <AnalyticsTab chatSpaceId={id} />
                 </TabsContent>
 
-                <TabsContent value="settings">
+                <TabsContent value="settings" className="space-y-6">
                     <Card>
                         <CardHeader>
                             <CardTitle>Settings</CardTitle>
@@ -524,9 +533,113 @@ export default function ChatSpaceDetailPage() {
                                     {`<script src="http://localhost:6002/widget.js" data-chat-space="${chatSpace.endpoint_slug}"></script>`}
                                 </div>
                             </div>
+                        </CardContent>
+                    </Card>
 
-                            <div className="pt-4 border-t">
-                                <h3 className="text-lg font-medium mb-4">OpenRouter Configuration</h3>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Widget Appearance</CardTitle>
+                            <CardDescription>
+                                Customize how the chat widget appears on your website.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="position">Position</Label>
+                                    <select
+                                        id="position"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        value={chatSpace.widget_config?.position || 'bottom-right'}
+                                        onChange={(e) => {
+                                            const newConfig = { ...chatSpace.widget_config, position: e.target.value };
+                                            setChatSpace({ ...chatSpace, widget_config: newConfig, ai_config: chatSpace.ai_config } as any);
+                                        }}
+                                    >
+                                        <option value="bottom-right">Bottom Right</option>
+                                        <option value="bottom-center">Bottom Center</option>
+                                        <option value="bottom-left">Bottom Left</option>
+                                        <option value="top-right">Top Right</option>
+                                        <option value="top-center">Top Center</option>
+                                        <option value="top-left">Top Left</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="width">Window Width</Label>
+                                    <select
+                                        id="width"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        value={chatSpace.widget_config?.width || 'small'}
+                                        onChange={(e) => {
+                                            const newConfig = { ...chatSpace.widget_config, width: e.target.value };
+                                            setChatSpace({ ...chatSpace, widget_config: newConfig, ai_config: chatSpace.ai_config } as any);
+                                        }}
+                                    >
+                                        <option value="small">Small (350px)</option>
+                                        <option value="medium">Medium (450px)</option>
+                                        <option value="large">Large (550px)</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="launcherType">Launcher Style</Label>
+                                    <select
+                                        id="launcherType"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        value={chatSpace.widget_config?.launcherType || 'icon'}
+                                        onChange={(e) => {
+                                            const newConfig = { ...chatSpace.widget_config, launcherType: e.target.value };
+                                            setChatSpace({ ...chatSpace, widget_config: newConfig, ai_config: chatSpace.ai_config } as any);
+                                        }}
+                                    >
+                                        <option value="icon">Icon Only</option>
+                                        <option value="text">Text & Icon</option>
+                                    </select>
+                                </div>
+
+                                {chatSpace.widget_config?.launcherType === 'text' && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="launcherText">Launcher Text</Label>
+                                        <Input
+                                            id="launcherText"
+                                            placeholder="Ask me anything..."
+                                            value={chatSpace.widget_config?.launcherText || ''}
+                                            onChange={(e) => {
+                                                const newConfig = { ...chatSpace.widget_config, launcherText: e.target.value };
+                                                setChatSpace({ ...chatSpace, widget_config: newConfig, ai_config: chatSpace.ai_config } as any);
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <Button
+                                onClick={async () => {
+                                    try {
+                                        await api.patch(`/chat-spaces/${id}`, {
+                                            widget_config: chatSpace.widget_config
+                                        });
+                                        toast.success('Appearance settings saved');
+                                    } catch (error: any) {
+                                        toast.error(`Failed to save settings: ${error.message}`);
+                                    }
+                                }}
+                            >
+                                Save Appearance
+                            </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>AI Configuration</CardTitle>
+                            <CardDescription>
+                                Customize the AI model and behavior for this chat space.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4">
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="openRouterApiKey">API Key (Optional)</Label>
@@ -599,6 +712,54 @@ export default function ChatSpaceDetailPage() {
                                     </Button>
                                 </div>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Security & Restrictions</CardTitle>
+                            <CardDescription>
+                                Control where your chat widget can be used.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="allowedDomains">Allowed Domains (Optional)</Label>
+                                <Textarea
+                                    id="allowedDomains"
+                                    placeholder="example.com, my-website.com"
+                                    value={Array.isArray(chatSpace.widget_config?.allowedDomains) ? chatSpace.widget_config.allowedDomains.join(', ') : ''}
+                                    onChange={(e) => {
+                                        const domains = e.target.value.split(',').map(d => d.trim());
+                                        const newConfig = { ...chatSpace.widget_config, allowedDomains: domains };
+                                        setChatSpace({ ...chatSpace, widget_config: newConfig } as any);
+                                    }}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Comma-separated list of domains allowed to use this widget (e.g., example.com). Leave blank to allow all.
+                                </p>
+                            </div>
+                            <Button
+                                onClick={async () => {
+                                    try {
+                                        // Ensure we filter out empty strings before saving
+                                        const domains = chatSpace.widget_config?.allowedDomains?.filter((d: string) => d.length > 0) || [];
+                                        const newConfig = { ...chatSpace.widget_config, allowedDomains: domains };
+
+                                        await api.patch(`/chat-spaces/${id}`, {
+                                            widget_config: newConfig
+                                        });
+                                        toast.success('Security settings saved successfully');
+
+                                        // Update state with clean array
+                                        setChatSpace({ ...chatSpace, widget_config: newConfig } as any);
+                                    } catch (error: any) {
+                                        toast.error(`Failed to save settings: ${error.message}`);
+                                    }
+                                }}
+                            >
+                                Save Security Settings
+                            </Button>
                         </CardContent>
                     </Card>
                 </TabsContent>

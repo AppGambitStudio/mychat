@@ -45,8 +45,10 @@
     chatWindow.style.position = 'absolute';
     chatWindow.style.bottom = '80px';
     chatWindow.style.right = '0';
-    chatWindow.style.width = '350px';
+    chatWindow.style.width = '350px'; // Default
+    chatWindow.style.maxWidth = '90vw'; // Responsive mobile safety
     chatWindow.style.height = '500px';
+    chatWindow.style.maxHeight = '80vh';
     chatWindow.style.backgroundColor = 'white';
     chatWindow.style.borderRadius = '10px';
     chatWindow.style.boxShadow = '0 10px 15px rgba(0,0,0,0.1)';
@@ -80,6 +82,94 @@
             if (data.name) {
                 header.innerHTML = `MyChat Assistant - ${data.name}`;
             }
+
+            // Apply Widget Config
+            const config = data.widget_config || {};
+
+            // 1. Position
+            const pos = config.position || 'bottom-right';
+            container.style.bottom = '';
+            container.style.top = '';
+            container.style.left = '';
+            container.style.right = '';
+
+            // Reset Chat Window Pos
+            chatWindow.style.bottom = '';
+            chatWindow.style.top = '';
+            chatWindow.style.left = '';
+            chatWindow.style.right = '';
+
+            if (pos === 'bottom-right') {
+                container.style.bottom = '20px';
+                container.style.right = '20px';
+                chatWindow.style.bottom = '80px';
+                chatWindow.style.right = '0';
+            } else if (pos === 'bottom-left') {
+                container.style.bottom = '20px';
+                container.style.left = '20px';
+                chatWindow.style.bottom = '80px';
+                chatWindow.style.left = '0';
+            } else if (pos === 'bottom-center') {
+                container.style.bottom = '20px';
+                container.style.left = '50%';
+                container.style.transform = 'translateX(-50%)'; // Only for container, might affect button rotation
+                // Fix transform conflict with button rotation?
+                // Actually container doesn't rotate. Button rotates.
+                // But container transform creates a new stacking context.
+
+                chatWindow.style.bottom = '80px';
+                chatWindow.style.left = '50%';
+                chatWindow.style.transform = 'translateX(-50%)';
+            } else if (pos === 'top-right') {
+                container.style.top = '20px';
+                container.style.right = '20px';
+                chatWindow.style.top = '80px';
+                chatWindow.style.right = '0';
+            } else if (pos === 'top-left') {
+                container.style.top = '20px';
+                container.style.left = '20px';
+                chatWindow.style.top = '80px';
+                chatWindow.style.left = '0';
+            } else if (pos === 'top-center') {
+                container.style.top = '20px';
+                container.style.left = '50%';
+                container.style.transform = 'translateX(-50%)';
+                chatWindow.style.top = '80px';
+                chatWindow.style.left = '50%';
+                chatWindow.style.transform = 'translateX(-50%)';
+            }
+
+            // 2. Launcher Style
+            if (config.launcherType === 'text') {
+                button.style.width = 'auto';
+                button.style.borderRadius = '30px';
+                button.style.padding = '0 20px';
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = config.launcherText || 'Chat';
+                textSpan.style.marginLeft = '10px';
+                textSpan.style.fontWeight = '600';
+                textSpan.style.whiteSpace = 'nowrap';
+
+                // When open, we might want to hide text or keep it?
+                // Standard behavior: turn into close icon (round).
+                // Or keep pill? Let's check user request. "Chat Button with custom text".
+                // Usually it turns into close icon.
+                // Let's store the original content.
+                button.setAttribute('data-text', config.launcherText || 'Chat');
+
+                // Add text to button initially
+                button.appendChild(textSpan);
+            }
+
+            // 3. Window Width
+            const widthMap = {
+                'small': '350px',
+                'medium': '450px',
+                'large': '550px'
+            };
+            const width = widthMap[config.width] || '350px';
+            chatWindow.style.width = width;
 
             // Track Load
             if (data.id) {
@@ -170,8 +260,38 @@
     button.onclick = () => {
         isOpen = !isOpen;
         chatWindow.style.display = isOpen ? 'flex' : 'none';
-        button.innerHTML = isOpen ? closeIcon : chatIcon;
-        button.style.transform = isOpen ? 'rotate(90deg)' : 'rotate(0deg)';
+
+        const configText = button.getAttribute('data-text');
+
+        if (isOpen) {
+            // Close State: Always show Close Icon, Round Button
+            button.innerHTML = closeIcon;
+            button.style.width = '60px'; // Revert to round
+            button.style.borderRadius = '50%';
+            button.style.padding = '0';
+            button.style.transform = 'rotate(90deg)';
+        } else {
+            // Open State (Initial): Revert to config style
+            button.style.transform = 'rotate(0deg)';
+            button.innerHTML = chatIcon;
+
+            if (configText) {
+                button.style.width = 'auto'; // Pill
+                button.style.borderRadius = '30px';
+                button.style.padding = '0 20px';
+
+                const textSpan = document.createElement('span');
+                textSpan.innerText = configText;
+                textSpan.style.marginLeft = '10px';
+                textSpan.style.fontWeight = '600';
+                textSpan.style.whiteSpace = 'nowrap';
+                button.appendChild(textSpan);
+            } else {
+                button.style.width = '60px';
+                button.style.borderRadius = '50%';
+                button.style.padding = '0';
+            }
+        }
     };
 
     // Load TikTok Sans font
