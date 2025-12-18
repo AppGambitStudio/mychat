@@ -1,7 +1,17 @@
 (function () {
     const script = document.currentScript;
     const chatSpaceSlug = script.getAttribute('data-chat-space');
-    const backendUrl = 'http://localhost:6002'; // Should be configurable or relative
+
+    // Auto-detect backend URL from the script source
+    // src="https://api.example.com/widget.js" -> backendUrl="https://api.example.com"
+    const src = script.src;
+    const backendUrl = src.substring(0, src.lastIndexOf('/'));
+
+    // Fallback if something goes wrong (though script.src should always exist)
+    if (!backendUrl) {
+        console.error('MyChat: Could not detect backend URL');
+        return;
+    }
 
     if (!chatSpaceSlug) {
         console.error('MyChat: data-chat-space attribute is missing');

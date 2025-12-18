@@ -17,12 +17,26 @@ export const scrapeUrl = async (url: string): Promise<{ title: string; content: 
                 '--no-first-run',
                 '--no-zygote',
                 '--disable-gpu',
-                '--disable-software-rasterizer' // ensure software rasterizer is also disabled if cpu is stressed
+                '--disable-software-rasterizer',
+                '--disable-features=IsolateOrigins,site-per-process', // Memory: Disable strict isolation
+                '--blink-settings=imagesEnabled=false', // Memory: Disable images
+                '--mute-audio' // Memory: Disable audio
             ],
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
         });
 
         const page = await browser.newPage();
+
+        // BLOCK RESOURCES (Images, CSS, Fonts, Media) to save bandwidth/memory
+        await page.setRequestInterception(true);
+        page.on('request', (req) => {
+            const resourceType = req.resourceType();
+            if (['image', 'stylesheet', 'font', 'media', 'other'].includes(resourceType)) {
+                req.abort();
+            } else {
+                req.continue();
+            }
+        });
 
         // Set a realistic User-Agent (Mac Chrome) to avoid detection
         await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
@@ -31,7 +45,7 @@ export const scrapeUrl = async (url: string): Promise<{ title: string; content: 
         await page.setExtraHTTPHeaders({
             'Upgrade-Insecure-Requests': '1',
             'Accept-Language': 'en-US,en;q=0.9',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Referer': 'https://www.google.com/',
         });
 
@@ -40,7 +54,8 @@ export const scrapeUrl = async (url: string): Promise<{ title: string; content: 
         let retries = 3;
         while (retries > 0) {
             try {
-                const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+                // Increased timeout for slow sites, but "domcontentloaded" is usually fast
+                const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
                 if (response) {
                     // console.log(`Response status: ${response.status()}`); // Debug log
                     if (response.status() >= 400 && response.status() !== 404) { // Allow 404 for now to see if content extracts
@@ -48,7 +63,7 @@ export const scrapeUrl = async (url: string): Promise<{ title: string; content: 
                     }
                 }
 
-                await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 3000) + 2000));
+                await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 2000) + 1000));
                 break;
             } catch (error: any) {
                 const isRetryable = error.message.includes('detached Frame') ||
@@ -67,8 +82,8 @@ export const scrapeUrl = async (url: string): Promise<{ title: string; content: 
             }
         }
 
-        // Add a random delay (2-5 seconds) to simulate human behavior and allow dynamic content to load
-        const delay = Math.floor(Math.random() * 3000) + 2000;
+        // Add a random delay (1-3 seconds)
+        const delay = Math.floor(Math.random() * 2000) + 1000;
         console.log(`Waiting ${delay}ms for dynamic content...`);
         await new Promise(resolve => setTimeout(resolve, delay));
 

@@ -530,7 +530,7 @@ export default function ChatSpaceDetailPage() {
                             <div className="space-y-2">
                                 <Label>Embed Code</Label>
                                 <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md font-mono text-sm overflow-x-auto">
-                                    {`<script src="http://localhost:6002/widget.js" data-chat-space="${chatSpace.endpoint_slug}"></script>`}
+                                    {`<script src="${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6002'}/widget.js" data-chat-space="${chatSpace.endpoint_slug}"></script>`}
                                 </div>
                             </div>
                         </CardContent>

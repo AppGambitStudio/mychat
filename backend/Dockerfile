@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     ca-certificates \
     ttf-freefont \
     nodejs \
-    yarn
+    yarn \
+    dumb-init
 
 # Tell Puppeteer to skip installing Chrome. We'll use the installed package.
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
@@ -26,4 +27,5 @@ COPY . .
 
 EXPOSE 6002
 
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["npm", "run", "dev"]
