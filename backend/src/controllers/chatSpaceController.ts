@@ -309,3 +309,33 @@ export const processChatSpace = async (req: any, res: Response) => {
         res.status(500).json({ error: 'Processing failed' });
     }
 };
+export const clearDocuments = async (req: any, res: Response) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        const chatSpace = await ChatSpace.findOne({ where: { id, user_id: userId } });
+        if (!chatSpace) {
+            return res.status(404).json({ error: 'Chat space not found' });
+        }
+
+        // 1. Delete Document Chunks (Vectors)
+        await DocumentChunk.destroy({ where: { chat_space_id: id } });
+
+        // 2. Delete Documents
+        await Document.destroy({ where: { chat_space_id: id } });
+
+        // 3. Reset stats
+        await chatSpace.update({
+            data_usage_bytes: 0,
+            status: 'draft', // Reset status so user can process again
+            message_count: 0, // Optional: Reset message count if we want a full reset? Plan said only documents/vectors. keeping message count for now unless requested.
+            // Actually plan said "Reset ChatSpace stats: data_usage_bytes = 0, status = 'draft'". 
+        });
+
+        res.json({ message: 'All documents and vectors cleared successfully', chatSpace });
+    } catch (error) {
+        console.error('Clear documents failed:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};

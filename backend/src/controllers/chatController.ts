@@ -48,7 +48,7 @@ export const handleChat = async (req: Request, res: Response) => {
 
         // Fetch Settings
         const settings = await Settings.findOne({ where: { userId: chatSpace.user_id } });
-        const responseTone = settings?.responseTone || 'professional';
+        const responseTone = chatSpace.ai_config?.responseTone || settings?.responseTone || 'professional';
 
         // Fallback to Knowledgebase Connector
         if (similarChunks.length === 0 && settings?.kbConnectorActive && settings?.kbConnectorUrl) {
@@ -96,9 +96,10 @@ Instructions:
             { role: 'user', content: message },
         ];
 
-        console.log(messages);
-
-        const aiResponse = await generateChatResponse(messages);
+        const aiResponse = await generateChatResponse(messages, {
+            model: chatSpace.ai_config?.openRouterModelId,
+            apiKey: chatSpace.ai_config?.openRouterApiKey
+        });
 
         // 6. Store Assistant Message
         const assistantMessage = await Message.create({

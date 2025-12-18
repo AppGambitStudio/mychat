@@ -25,6 +25,7 @@ import {
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import AnalyticsTab from '@/components/AnalyticsTab';
+import { api } from '@/lib/api';
 
 interface Document {
     id: string;
@@ -45,6 +46,11 @@ interface ChatSpace {
     widget_status?: 'testing' | 'live' | 'maintenance';
     last_processed_at?: string;
     data_usage_bytes?: number;
+    ai_config?: {
+        openRouterApiKey?: string;
+        openRouterModelId?: string;
+        responseTone?: 'professional' | 'friendly' | 'concise' | 'detailed';
+    };
 }
 
 export default function ChatSpaceDetailPage() {
@@ -65,19 +71,21 @@ export default function ChatSpaceDetailPage() {
     const [showProcessConfirm, setShowProcessConfirm] = useState(false);
 
     const fetchChatSpace = async () => {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:6002/api/chat-spaces/${id}?t=${Date.now()}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) setChatSpace(await res.json());
+        try {
+            const data = await api.get<ChatSpace>(`/chat-spaces/${id}`);
+            setChatSpace(data);
+        } catch (error) {
+            console.error('Failed to fetch chat space', error);
+        }
     };
 
     const fetchDocuments = async () => {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:6002/api/chat-spaces/${id}/documents?t=${Date.now()}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) setDocuments(await res.json());
+        try {
+            const data = await api.get<Document[]>(`/chat-spaces/${id}/documents`);
+            setDocuments(data);
+        } catch (error) {
+            console.error('Failed to fetch documents', error);
+        }
     };
 
     useEffect(() => {
@@ -88,27 +96,14 @@ export default function ChatSpaceDetailPage() {
     const handleUrlSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setUploading(true);
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`http://localhost:6002/api/chat-spaces/${id}/documents`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ type: 'url', source_url: url }),
-            });
-            if (res.ok) {
-                setUrl('');
-                fetchDocuments();
-                toast.success('URL added successfully');
-            } else {
-                const data = await res.json();
-                toast.error(`Failed to add URL: ${data.error || 'Unknown error'}`);
-            }
-        } catch (error) {
+            await api.post(`/chat-spaces/${id}/documents`, { type: 'url', source_url: url });
+            setUrl('');
+            fetchDocuments();
+            toast.success('URL added successfully');
+        } catch (error: any) {
             console.error('Failed to add URL', error);
-            toast.error('Failed to add URL');
+            toast.error(`Failed to add URL: ${error.message}`);
         } finally {
             setUploading(false);
         }
@@ -117,31 +112,18 @@ export default function ChatSpaceDetailPage() {
     const handleManualTextSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setUploading(true);
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`http://localhost:6002/api/chat-spaces/${id}/documents`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    type: 'text',
-                    text_content: manualText,
-                    file_name: manualText.split(/\s+/).slice(0, 5).join(' ') + (manualText.split(/\s+/).length > 5 ? '...' : '')
-                }),
+            await api.post(`/chat-spaces/${id}/documents`, {
+                type: 'text',
+                text_content: manualText,
+                file_name: manualText.split(/\s+/).slice(0, 5).join(' ') + (manualText.split(/\s+/).length > 5 ? '...' : '')
             });
-            if (res.ok) {
-                setManualText('');
-                fetchDocuments();
-                toast.success('Text added successfully');
-            } else {
-                const data = await res.json();
-                toast.error(`Failed to add text: ${data.error || 'Unknown error'}`);
-            }
-        } catch (error) {
+            setManualText('');
+            fetchDocuments();
+            toast.success('Text added successfully');
+        } catch (error: any) {
             console.error('Failed to add text', error);
-            toast.error('Failed to add text');
+            toast.error(`Failed to add text: ${error.message}`);
         } finally {
             setUploading(false);
         }
@@ -152,34 +134,19 @@ export default function ChatSpaceDetailPage() {
         if (!file) return;
         setUploading(true);
 
-        const token = localStorage.getItem('token');
         const formData = new FormData();
         formData.append('file', file);
 
         try {
-            const res = await fetch(`http://localhost:6002/api/chat-spaces/${id}/documents/upload`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: formData,
-            });
-
-            if (res.ok) {
-                setFile(null);
-                // Reset file input value if possible, or just rely on state
-                const fileInput = document.getElementById('file') as HTMLInputElement;
-                if (fileInput) fileInput.value = '';
-
-                fetchDocuments();
-                toast.success('Document uploaded successfully');
-            } else {
-                const data = await res.json();
-                toast.error(`Failed to upload: ${data.error || 'Unknown error'}`);
-            }
-        } catch (error) {
+            await api.postForm(`/chat-spaces/${id}/documents/upload`, formData);
+            setFile(null);
+            const fileInput = document.getElementById('file') as HTMLInputElement;
+            if (fileInput) fileInput.value = '';
+            fetchDocuments();
+            toast.success('Document uploaded successfully');
+        } catch (error: any) {
             console.error('Upload failed', error);
-            toast.error('Upload failed');
+            toast.error(`Upload failed: ${error.message}`);
         } finally {
             setUploading(false);
         }
@@ -191,36 +158,44 @@ export default function ChatSpaceDetailPage() {
 
     const confirmDelete = async () => {
         if (!deleteId) return;
-        const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:6002/api/documents/${deleteId}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) fetchDocuments();
+        try {
+            await api.delete(`/documents/${deleteId}`);
+            fetchDocuments();
+        } catch (error) {
+            console.error('Delete failed', error);
+            toast.error('Delete failed');
+        }
         setDeleteId(null);
     };
 
     const handleProcess = async () => {
         setShowProcessConfirm(false);
         setProcessing(true);
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`http://localhost:6002/api/chat-spaces/${id}/process`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                await fetchChatSpace(); // Refresh to get updated last_processed_at
-                await fetchDocuments(); // Refresh to show new recursively scraped documents
-                toast.success('Processing completed successfully!');
-            } else {
-                toast.error('Processing failed.');
-            }
+            await api.post(`/chat-spaces/${id}/process`, {});
+            await fetchChatSpace(); // Refresh to get updated last_processed_at
+            await fetchDocuments(); // Refresh to show new recursively scraped documents
+            toast.success('Processing completed successfully!');
         } catch (error) {
             console.error('Processing error', error);
             toast.error('Processing error.');
         } finally {
             setProcessing(false);
+        }
+    };
+
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+    const handleClearDocuments = async () => {
+        try {
+            await api.delete(`/chat-spaces/${id}/documents`);
+            toast.success('All documents cleared');
+            fetchDocuments();
+            fetchChatSpace(); // to reset usage stats
+            setShowClearConfirm(false);
+        } catch (error) {
+            console.error('Clear failed', error);
+            toast.error('Clear failed');
         }
     };
 
@@ -236,6 +211,18 @@ export default function ChatSpaceDetailPage() {
         setChatLoading(true);
 
         try {
+            // Widget API might be different (public?), check if it needs auth. 
+            // Usually widget is public but here we are previewing in dashboard.
+            // Using fetch explicitly here if it's external or api wrapper if internal. 
+            // Based on previous code: http://localhost:6002/api/widget... which IS internal API but maybe public route?
+            // Assuming we use api wrapper for consistency but widget routes might not require auth.
+            // Let's stick to fetch for widget if it doesn't need auth, merging api.ts might attach auth which is fine, 
+            // but api.ts handles 401. If widget returns 401 because we sent auth token to public route? Unlikely.
+            // Let's use api.post but we need to check if endpoint matches.
+            // Actually, let's keep it as fetch to be safe about public/private separation, 
+            // OR use api.post if we consider this a dashboard action.
+            // Since it is a PREVIEW, we can use api.post. However, the route is /api/widget/...
+
             const res = await fetch(`http://localhost:6002/api/widget/${chatSpace.endpoint_slug}/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -390,8 +377,13 @@ export default function ChatSpaceDetailPage() {
                     </div>
 
                     <Card>
-                        <CardHeader>
+                        <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Documents</CardTitle>
+                            {documents.length > 0 && (
+                                <Button variant="destructive" size="sm" onClick={() => setShowClearConfirm(true)}>
+                                    Clear All
+                                </Button>
+                            )}
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
@@ -532,6 +524,81 @@ export default function ChatSpaceDetailPage() {
                                     {`<script src="http://localhost:6002/widget.js" data-chat-space="${chatSpace.endpoint_slug}"></script>`}
                                 </div>
                             </div>
+
+                            <div className="pt-4 border-t">
+                                <h3 className="text-lg font-medium mb-4">OpenRouter Configuration</h3>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="openRouterApiKey">API Key (Optional)</Label>
+                                        <Input
+                                            id="openRouterApiKey"
+                                            type="password"
+                                            placeholder="sk-or-..."
+                                            value={chatSpace.ai_config?.openRouterApiKey || ''}
+                                            onChange={(e) => {
+                                                const newConfig = { ...chatSpace.ai_config, openRouterApiKey: e.target.value };
+                                                setChatSpace({ ...chatSpace, ai_config: newConfig } as any);
+                                            }}
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Leave blank to use the system default key. Always create key with Daily/Weekly limits.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="openRouterModelId">Model ID (Optional)</Label>
+                                        <Input
+                                            id="openRouterModelId"
+                                            placeholder="google/gemini-2.5-flash"
+                                            value={chatSpace.ai_config?.openRouterModelId || ''}
+                                            onChange={(e) => {
+                                                const newConfig = { ...chatSpace.ai_config, openRouterModelId: e.target.value };
+                                                setChatSpace({ ...chatSpace, ai_config: newConfig } as any);
+                                            }}
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Leave blank to use the default model (google/gemini-2.5-flash).
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="responseTone">Response Tone</Label>
+                                        <select
+                                            id="responseTone"
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            value={chatSpace.ai_config?.responseTone || ''}
+                                            onChange={(e) => {
+                                                const newConfig = { ...chatSpace.ai_config, responseTone: e.target.value };
+                                                setChatSpace({ ...chatSpace, ai_config: newConfig } as any);
+                                            }}
+                                        >
+                                            <option value="">Default (Use Global Setting)</option>
+                                            <option value="professional">Professional</option>
+                                            <option value="friendly">Friendly</option>
+                                            <option value="concise">Concise</option>
+                                            <option value="detailed">Detailed</option>
+                                        </select>
+                                        <p className="text-xs text-muted-foreground">
+                                            Select the tone for the AI's responses.
+                                        </p>
+                                    </div>
+
+                                    <Button
+                                        onClick={async () => {
+                                            try {
+                                                await api.patch(`/chat-spaces/${id}`, {
+                                                    ai_config: chatSpace.ai_config
+                                                });
+                                                toast.success('AI settings saved successfully');
+                                            } catch (error: any) {
+                                                toast.error(`Failed to save settings: ${error.message}`);
+                                            }
+                                        }}
+                                    >
+                                        Save AI Settings
+                                    </Button>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -563,6 +630,21 @@ export default function ChatSpaceDetailPage() {
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleProcess} className="bg-green-600 hover:bg-green-700 text-white">Start Processing</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Clear all documents?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will remove all documents, chunks, and reset your data usage. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearDocuments} className="bg-red-600 hover:bg-red-700 text-white">Clear All</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

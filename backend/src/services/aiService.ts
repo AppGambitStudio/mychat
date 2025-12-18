@@ -27,10 +27,26 @@ export const generateEmbedding = async (text: string): Promise<number[]> => {
 
 export const generateChatResponse = async (
     messages: any[],
-    model: string = 'google/gemini-2.5-flash'
+    config: { model?: string; apiKey?: string } = {}
 ): Promise<string> => {
     try {
-        const response = await openai.chat.completions.create({
+        let client = openai;
+
+        // If a custom API key is provided, create a new client instance
+        if (config.apiKey) {
+            client = new OpenAI({
+                baseURL: 'https://openrouter.ai/api/v1',
+                apiKey: config.apiKey,
+                defaultHeaders: {
+                    'HTTP-Referer': 'https://mychat.com',
+                    'X-Title': 'MyChat',
+                },
+            });
+        }
+
+        const model = config.model || 'google/gemini-2.5-flash';
+
+        const response = await client.chat.completions.create({
             model,
             messages,
         });

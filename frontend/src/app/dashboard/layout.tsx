@@ -15,12 +15,40 @@ export default function DashboardLayout({
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            router.push('/login');
-        } else {
-            setIsLoading(false);
-        }
+        const validateSession = async () => {
+            try {
+                // We'll hit a lightweight protected endpoint to verify the token is valid.
+                // If it fails with 401, the api utility (if used) or this check will redirect.
+                // However, since we haven't refactored api.ts to be used here yet (and layout shouldn't depend on it circularly if possible),
+                // we'll stick to simple fetch but handle 401 explicitly, OR use api.get if possible.
+                // Using api.get('/auth/me') seems best, assuming such route exists or we use a simple one like /chat-spaces.
+                // Let's use /auth/me if exists, or just /chat-spaces? 
+                // We don't have /auth/me. Let's use /chat-spaces as a lightweight check.
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    router.push('/login');
+                    return;
+                }
+
+                const res = await fetch('http://localhost:6002/api/chat-spaces', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (res.status === 401) {
+                    localStorage.removeItem('token');
+                    router.push('/login');
+                } else {
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                // Network error? Allow load, other components will fail gracefully or show error.
+                // Or better, just redirect to login if we can't verify? 
+                // Let's be safe: if network error, maybe show loading or retry. 
+                // For now, let's assume if token formats look ok, we proceed.
+                setIsLoading(false);
+            }
+        };
+        validateSession();
     }, [router]);
 
     if (isLoading) {

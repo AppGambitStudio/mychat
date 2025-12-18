@@ -6,6 +6,7 @@ import {
     updateChatSpace,
     deleteChatSpace,
     processChatSpace,
+    clearDocuments,
 } from '../controllers/chatSpaceController';
 import { upload } from '../middleware/uploadMiddleware';
 import {
@@ -27,6 +28,8 @@ router.get('/:id', getChatSpace);
 router.patch('/:id', updateChatSpace);
 router.delete('/:id', deleteChatSpace);
 router.post('/:id/process', processChatSpace);
+
+router.delete('/:id/documents', clearDocuments);
 
 // Document routes nested under chat spaces
 router.get('/:chatSpaceId/documents', getDocuments);
