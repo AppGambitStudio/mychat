@@ -633,7 +633,7 @@ export default function ChatSpaceDetailPage() {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>AI Configuration</CardTitle>
+                            <CardTitle>OpenRouter AI Configuration</CardTitle>
                             <CardDescription>
                                 Customize the AI model and behavior for this chat space.
                             </CardDescription>
