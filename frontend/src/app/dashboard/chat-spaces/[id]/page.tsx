@@ -51,6 +51,7 @@ interface ChatSpace {
         launcherType?: 'icon' | 'text';
         launcherText?: string;
         width?: 'small' | 'medium' | 'large';
+        welcomeMessage?: string;
     };
     widget_status?: 'testing' | 'live' | 'maintenance';
     last_processed_at?: string;
@@ -59,6 +60,7 @@ interface ChatSpace {
         openRouterApiKey?: string;
         openRouterModelId?: string;
         responseTone?: 'professional' | 'friendly' | 'concise' | 'detailed';
+        safetyPrompt?: string;
     };
 }
 
@@ -614,6 +616,22 @@ export default function ChatSpaceDetailPage() {
                                 )}
                             </div>
 
+                            <div className="space-y-2">
+                                <Label htmlFor="welcomeMessage">Welcome Message</Label>
+                                <Input
+                                    id="welcomeMessage"
+                                    placeholder="Hi! How can I help you?"
+                                    value={chatSpace.widget_config?.welcomeMessage || ''}
+                                    onChange={(e) => {
+                                        const newConfig = { ...chatSpace.widget_config, welcomeMessage: e.target.value };
+                                        setChatSpace({ ...chatSpace, widget_config: newConfig, ai_config: chatSpace.ai_config } as any);
+                                    }}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    The initial message displayed to users when the chat opens.
+                                </p>
+                            </div>
+
                             <Button
                                 onClick={async () => {
                                     try {
@@ -693,6 +711,23 @@ export default function ChatSpaceDetailPage() {
                                         </select>
                                         <p className="text-xs text-muted-foreground">
                                             Select the tone for the AI's responses.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label htmlFor="safetyPrompt">Safety Instructions</Label>
+                                        <Textarea
+                                            id="safetyPrompt"
+                                            placeholder="e.g. Do not mention competitors. Keep responses under 50 words."
+                                            value={chatSpace.ai_config?.safetyPrompt || ''}
+                                            onChange={(e) => {
+                                                const newConfig = { ...chatSpace.ai_config, safetyPrompt: e.target.value };
+                                                setChatSpace({ ...chatSpace, ai_config: newConfig } as any);
+                                            }}
+                                            className="min-h-[100px]"
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Additional safety instructions to be injected into the system prompt.
                                         </p>
                                     </div>
 
