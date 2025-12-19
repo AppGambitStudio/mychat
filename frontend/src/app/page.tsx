@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Bot, FileText, Globe, Code, Zap, Shield, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { Bot, FileText, Globe, Code, Zap, Shield, ArrowRight, CheckCircle2, Sparkles, Cpu, BarChart } from 'lucide-react';
 
 export default function Home() {
   const containerVariants = {
@@ -93,8 +93,8 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Train a custom AI on your website content and documents in minutes.
-            Embed a beautiful chat widget that answers customer questions 24/7.
+            Connect your own models via OpenRouter, customize your widget's look and feel, and enforce strict safety rules.
+            The most powerful localized chat solution.
           </motion.p>
 
           <motion.div
@@ -108,40 +108,6 @@ export default function Home() {
                 Start Building Free <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link href="#demo">
-              <Button size="lg" variant="outline" className="h-12 px-8 rounded-full border-white/20 bg-white/5 hover:bg-white/10 text-white">
-                View Live Demo
-              </Button>
-            </Link>
-          </motion.div>
-
-          {/* Hero Image / Dashboard Preview */}
-          <motion.div
-            className="mt-20 w-full max-w-5xl rounded-xl border border-white/10 bg-white/5 p-2 backdrop-blur-sm shadow-2xl shadow-blue-500/10"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <div className="rounded-lg overflow-hidden aspect-[16/9] bg-gray-900 relative group">
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent z-10" />
-              <img
-                src="https://placehold.co/1200x675/1e293b/94a3b8?text=Dashboard+Interface"
-                alt="Dashboard Interface"
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500"
-              />
-
-              {/* Floating UI Elements for effect */}
-              <div className="absolute bottom-8 left-8 right-8 z-20 flex gap-4">
-                <div className="flex-1 bg-gray-800/80 backdrop-blur-md p-4 rounded-lg border border-white/10">
-                  <div className="h-2 w-24 bg-blue-500/50 rounded mb-2" />
-                  <div className="h-2 w-full bg-gray-700 rounded" />
-                </div>
-                <div className="flex-1 bg-gray-800/80 backdrop-blur-md p-4 rounded-lg border border-white/10 hidden md:block">
-                  <div className="h-2 w-24 bg-purple-500/50 rounded mb-2" />
-                  <div className="h-2 w-full bg-gray-700 rounded" />
-                </div>
-              </div>
-            </div>
           </motion.div>
         </section>
 
@@ -164,43 +130,43 @@ export default function Home() {
             {[
               {
                 icon: FileText,
-                title: 'Multi-Format Training',
-                desc: 'Upload PDF, DOCX, HTML, TXT, or Markdown files. We automatically process and chunk them for optimal retrieval.',
+                title: 'Universal Data Ingestion',
+                desc: 'Upload PDF, DOCX, HTML, TXT, or Markdown. We process and chunk everything for perfect retrieval.',
                 color: 'text-blue-400',
                 bg: 'bg-blue-500/10',
               },
               {
                 icon: Globe,
-                title: 'Website Scraping',
-                desc: 'Just paste your URL. We crawl your site to ensure your bot knows everything about your product.',
+                title: 'Smart Web Crawling',
+                desc: 'Deep recursive crawling ensures your bot knows every corner of your documentation and website.',
                 color: 'text-purple-400',
                 bg: 'bg-purple-500/10',
               },
               {
                 icon: Code,
-                title: 'Smart Widget',
-                desc: 'Embed with one click. Control visibility with Testing, Live, and Maintenance modes instantly.',
+                title: 'Brand-Perfect Widget',
+                desc: 'Fully customizable placement, colors, welcome messages, and launcher styles to match your brand.',
                 color: 'text-pink-400',
                 bg: 'bg-pink-500/10',
               },
               {
-                icon: Zap,
-                title: 'Real-time Learning',
-                desc: 'Update your knowledge base anytime. Your bot learns new information instantly.',
+                icon: Cpu,
+                title: 'Bring Your Own Model',
+                desc: 'Connect via OpenRouter to use GPT-4, Claude 3, Llama 3, or any model you prefer.',
                 color: 'text-yellow-400',
                 bg: 'bg-yellow-500/10',
               },
               {
-                icon: Bot,
-                title: 'AI Personality',
-                desc: 'Choose from multiple tones (Professional, Friendly, etc.) to match your brand\'s unique voice.',
+                icon: Shield,
+                title: 'Safety & Control',
+                desc: 'Define strict safety prompts, allowed domains, and content boundaries. Your AI, your rules.',
                 color: 'text-green-400',
                 bg: 'bg-green-500/10',
               },
               {
-                icon: Shield,
-                title: 'Enterprise Security',
-                desc: 'Your data is encrypted and isolated. We prioritize privacy and data protection.',
+                icon: BarChart,
+                title: 'Analytics & Insights',
+                desc: 'Track chat volume, user queries, and engagement stats to optimize your support.',
                 color: 'text-cyan-400',
                 bg: 'bg-cyan-500/10',
               },
@@ -229,33 +195,73 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Plan */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Self-hosted Plan */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               className="p-8 rounded-3xl border border-white/10 bg-white/5 relative overflow-hidden"
             >
+              <h3 className="text-2xl font-bold mb-2">Self-hosted</h3>
+              <div className="flex items-baseline gap-1 mb-6">
+                <span className="text-4xl font-bold">Free</span>
+                <span className="text-gray-400">/ Open Source</span>
+              </div>
+              <p className="text-gray-400 mb-8">Host it yourself on your own infrastructure.</p>
+              <ul className="space-y-4 mb-8">
+                {[
+                  'Full Source Code Access',
+                  'Deploy Anywhere (Docker)',
+                  'Community Support',
+                  'MIT License',
+                  'Your Own AI Model'
+                ].map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                    <span className="text-gray-300">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="https://github.com/AppGambitStudio/mychat" target="_blank">
+                <Button className="w-full h-12 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold">
+                  View on GitHub
+                </Button>
+              </Link>
+            </motion.div>
+
+            {/* Starter Plan */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="p-8 rounded-3xl border border-blue-500/30 bg-blue-500/5 relative overflow-hidden"
+            >
               <div className="absolute top-0 right-0 p-4">
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/20">
-                  Current Plan
+                  Cloud
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Free</h3>
+              <h3 className="text-2xl font-bold mb-2">Starter</h3>
               <div className="flex items-baseline gap-1 mb-6">
                 <span className="text-4xl font-bold">$0</span>
                 <span className="text-gray-400">/month</span>
               </div>
-              <p className="text-gray-400 mb-8">Perfect for hobby projects and testing.</p>
+              <p className="text-gray-400 mb-8">Perfect for testing and small projects.</p>
               <ul className="space-y-4 mb-8">
                 {[
+                  'Hosted by Us',
                   '1 Chat Space',
                   '10 Website Links (Recursive Scraping)',
                   '2 PDF Documents',
                   '5 MB Data Processing Limit',
                   'Unlimited Chats',
-                  'Standard Support'
+                  'Standard Support',
+                  'Chat Widget Customization',
+                  'Domain Whitelisting',
+                  'Analytics & Insights',
+                  'Bring Your Own Model',
+                  'Safety & Control',
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 text-blue-500 flex-shrink-0" />
@@ -270,7 +276,7 @@ export default function Home() {
               </Link>
             </motion.div>
 
-            {/* Pro Plan */}
+            {/* Private Hosting Plan */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -279,24 +285,22 @@ export default function Home() {
             >
               <div className="absolute top-0 right-0 p-4">
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500 text-white shadow-lg shadow-purple-500/20">
-                  Popular
+                  Enterprise
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Pro</h3>
+              <h3 className="text-2xl font-bold mb-2">Private Hosting</h3>
               <div className="flex items-baseline gap-1 mb-6">
-                <span className="text-4xl font-bold">$29</span>
-                <span className="text-gray-400">/month</span>
+                <span className="text-3xl font-bold">Contact Us</span>
               </div>
-              <p className="text-gray-400 mb-8">For growing businesses and power users.</p>
+              <p className="text-gray-400 mb-8">Dedicated infrastructure and custom limits.</p>
               <ul className="space-y-4 mb-8">
                 {[
                   'Unlimited Chat Spaces',
-                  'Unlimited Website Links',
-                  'Unlimited PDF Documents',
-                  '1 GB Data Processing Limit',
-                  'Priority Support',
-                  'Remove "Powered by MyChat" Branding',
-                  'Custom Domain (Coming Soon)'
+                  'Unlimited Data Processing',
+                  'Custom Domain & Branding',
+                  'Dedicated Support',
+                  'SLA & Uptime Guarantee',
+                  'On-Premise Option'
                 ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3">
                     <CheckCircle2 className="h-5 w-5 text-purple-500 flex-shrink-0" />
@@ -304,9 +308,11 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Button className="w-full h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold">
-                Upgrade to Pro
-              </Button>
+              <Link href="mailto:dhaval@appgambit.com">
+                <Button className="w-full h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold">
+                  Contact Sales
+                </Button>
+              </Link>
             </motion.div>
           </div>
         </section>
@@ -340,7 +346,7 @@ export default function Home() {
               <span className="font-semibold">MyChat</span>
             </div>
             <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} APPGAMBiT MyChat. All rights reserved.
+              © {new Date().getFullYear()} <a href="https://appgambit.com" target="_blank" rel="noopener noreferrer">APPGAMBiT</a> MyChat. All rights reserved.
             </p>
             <div className="flex gap-6">
               <Link href="#" className="text-gray-500 hover:text-white transition-colors">Twitter</Link>
