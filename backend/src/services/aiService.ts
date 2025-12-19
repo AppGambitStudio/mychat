@@ -5,7 +5,7 @@ dotenv.config();
 
 const openai = new OpenAI({
     baseURL: 'https://openrouter.ai/api/v1',
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: process.env.OPENROUTER_API_KEY || 'sk-or-placeholder',
     defaultHeaders: {
         'HTTP-Referer': 'https://mychat.com', // Replace with your site URL
         'X-Title': 'MyChat', // Replace with your site title
