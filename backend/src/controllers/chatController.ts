@@ -119,11 +119,12 @@ Instructions:
 
         const systemPrompt = (chatSpace.ai_config?.systemPrompt || defaultSystemPrompt) +
             `\n\nStyle Guideline: Answer in a ${responseTone} tone. Always answer as a business assistant. This style guideline does NOT override the strict requirement to use ONLY the provided context.` +
+            (chatSpace.ai_config?.safetyPrompt ? `\n\n=== USER SAFETY INSTRUCTIONS ===\n${chatSpace.ai_config.safetyPrompt}` : '') +
             `\n\n=== SAFETY INSTRUCTIONS ===${CORE_SAFETY_INSTRUCTIONS}`;
 
         // Basic Input Guardrail: Check message length
-        if (message.length > 1000) {
-            return res.status(400).json({ error: 'Message too long' });
+        if (message.length > 200) {
+            return res.status(400).json({ error: 'Message too long (max 200 chars)' });
         }
 
         // Check Widget Status

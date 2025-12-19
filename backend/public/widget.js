@@ -190,7 +190,41 @@
         input.style.borderRadius = '4px';
         input.style.marginRight = '8px';
         input.placeholder = 'Type a message...';
+        input.maxLength = 200; // Character limit
         inputArea.appendChild(input);
+
+        // Character Counter
+        const counter = document.createElement('div');
+        counter.style.fontSize = '10px';
+        counter.style.color = '#9ca3af';
+        counter.style.textAlign = 'right';
+        counter.style.marginTop = '4px';
+        counter.innerText = '0/200';
+        // Insert counter below input area logic or inside it. 
+        // Let's modify structure slightly or just append to inputArea logic?
+        // inputArea is flex row. If we add counter, it will sit next to send btn.
+        // Let's wrap input and counter in a container.
+
+        // Actually, easiest is to place counter inside inputArea or make inputArea flex-wrap?
+        // Let's restructure inputArea to be column so counter is below, or keep it row and put counter absolute?
+        // Let's just append it to inputArea and make it flex-direction column? No, SEND button needs to be next to input.
+
+        // Re-doing Input Area construction:
+        inputArea.style.flexDirection = 'column';
+
+        const inputRow = document.createElement('div');
+        inputRow.style.display = 'flex';
+        inputRow.style.width = '100%';
+        inputArea.appendChild(inputRow);
+
+        inputRow.appendChild(input); // Input moves here
+        // sendBtn moves here (later)
+
+        inputArea.appendChild(counter); // Counter below row
+
+        input.oninput = () => {
+            counter.innerText = `${input.value.length}/200`;
+        };
 
         const sendBtn = document.createElement('button');
         sendBtn.innerHTML = 'Send';
@@ -200,7 +234,7 @@
         sendBtn.style.borderRadius = '4px';
         sendBtn.style.padding = '8px 12px';
         sendBtn.style.cursor = 'pointer';
-        inputArea.appendChild(sendBtn);
+        inputRow.appendChild(sendBtn); // Moved to inputRow
 
         // Handle Status
         if (data.status === 'testing') {
@@ -337,12 +371,42 @@
             messagesArea.scrollTop = messagesArea.scrollHeight;
         };
 
+        const showTypingIndicator = () => {
+            if (document.getElementById('mychat-typing-indicator')) return;
+
+            const msgDiv = document.createElement('div');
+            msgDiv.id = 'mychat-typing-indicator';
+            msgDiv.style.marginBottom = '10px';
+            msgDiv.style.textAlign = 'left';
+
+            const bubble = document.createElement('div');
+            bubble.style.display = 'inline-block';
+            bubble.style.padding = '8px 12px';
+            bubble.style.borderRadius = '8px';
+            bubble.style.backgroundColor = 'white';
+            bubble.style.color = '#6b7280';
+            bubble.style.fontSize = '12px';
+            bubble.style.fontStyle = 'italic';
+            bubble.innerText = 'Typing...';
+
+            msgDiv.appendChild(bubble);
+            messagesArea.appendChild(msgDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        };
+
+        const removeTypingIndicator = () => {
+            const indicator = document.getElementById('mychat-typing-indicator');
+            if (indicator) indicator.remove();
+        };
+
         const sendMessage = async () => {
             const text = input.value.trim();
             if (!text) return;
 
             appendMessage('user', text);
             input.value = '';
+
+            showTypingIndicator();
 
             try {
                 const res = await fetch(`${backendUrl}/api/widget/${chatSpaceSlug}/chat`, {
@@ -352,11 +416,14 @@
                 });
 
                 const data = await res.json();
+                removeTypingIndicator();
+
                 if (data.message) {
                     appendMessage('assistant', data.message.content);
                 }
             } catch (error) {
                 console.error('Chat error:', error);
+                removeTypingIndicator();
                 appendMessage('assistant', 'Sorry, something went wrong.');
             }
         };
@@ -389,6 +456,12 @@
                     anonymous_id: anonymousId
                 })
             }).catch(e => console.error('Analytics error', e));
+        }
+
+        // Welcome Message
+        const welcomeMsg = config.welcomeMessage || 'Hi! How can I help you?';
+        if (welcomeMsg) {
+            appendMessage('assistant', welcomeMsg);
         }
     };
 
