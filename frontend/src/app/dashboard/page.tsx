@@ -21,6 +21,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '@/lib/utils';
 
 interface ChatSpace {
     id: string;
@@ -41,7 +42,7 @@ export default function DashboardPage() {
     const fetchChatSpaces = async () => {
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch('http://localhost:6002/api/chat-spaces', {
+            const res = await fetch(`${API_BASE_URL}/chat-spaces`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (res.ok) {
@@ -61,7 +62,7 @@ export default function DashboardPage() {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch('http://localhost:6002/api/chat-spaces', {
+            const res = await fetch(`${API_BASE_URL}/chat-spaces`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -85,7 +86,7 @@ export default function DashboardPage() {
         if (!deleteId) return;
         const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`http://localhost:6002/api/chat-spaces/${deleteId}`, {
+            const res = await fetch(`${API_BASE_URL}/chat-spaces/${deleteId}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` },
             });

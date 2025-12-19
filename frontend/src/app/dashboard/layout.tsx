@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 
 import { ModeToggle } from '@/components/mode-toggle';
+import { API_BASE_URL } from '@/lib/utils';
 
 export default function DashboardLayout({
     children,
@@ -30,7 +31,7 @@ export default function DashboardLayout({
                     return;
                 }
 
-                const res = await fetch('http://localhost:6002/api/chat-spaces', {
+                const res = await fetch(`${API_BASE_URL}/chat-spaces`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 

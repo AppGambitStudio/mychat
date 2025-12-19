@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import toast from 'react-hot-toast';
+import { API_BASE_URL } from '@/lib/utils';
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -30,7 +31,7 @@ export default function SettingsPage() {
     const fetchSettings = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:6002/api/settings', {
+            const res = await fetch(`${API_BASE_URL}/settings`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (res.ok) {
@@ -54,7 +55,7 @@ export default function SettingsPage() {
         setSaving(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:6002/api/settings', {
+            const res = await fetch(`${API_BASE_URL}/settings`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
