@@ -40,6 +40,7 @@ export default function DashboardPage() {
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const fetchChatSpaces = async () => {
+        const token = localStorage.getItem('token');
         try {
             const res = await fetch(`${API_BASE_URL}/chat-spaces`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -59,6 +60,7 @@ export default function DashboardPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
+        const token = localStorage.getItem('token');
         try {
             const res = await fetch(`${API_BASE_URL}/chat-spaces`, {
                 method: 'POST',
@@ -83,6 +85,7 @@ export default function DashboardPage() {
 
     const handleDelete = async () => {
         if (!deleteId) return;
+        const token = localStorage.getItem('token');
         try {
             const res = await fetch(`${API_BASE_URL}/chat-spaces/${deleteId}`, {
                 method: 'DELETE',
