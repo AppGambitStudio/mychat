@@ -152,6 +152,9 @@ Instructions:
             context_chunks: similarChunks.map((c: any) => c.id),
         });
 
+        // Increment total messages processed for this Chat Space
+        await chatSpace.increment('message_count', { by: 2 });
+
         // Log Message Sent (User)
         logEvent(chatSpace.id, 'message_sent', conversation.end_user_id, { role: 'user', length: message.length, question: message });
         // Log Message Sent (Assistant)

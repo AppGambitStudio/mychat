@@ -6,6 +6,7 @@ import Conversation from '../models/Conversation';
 import Message from '../models/Message';
 import AnalyticsEvent from '../models/AnalyticsEvent';
 import DailyStat from '../models/DailyStat';
+import { sequelize } from '../config/database';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createChatSpace = async (req: any, res: Response) => {
@@ -45,9 +46,32 @@ export const createChatSpace = async (req: any, res: Response) => {
 export const getChatSpaces = async (req: any, res: Response) => {
     try {
         const userId = req.user.id;
-        const chatSpaces = await ChatSpace.findAll({ where: { user_id: userId } });
+        const chatSpaces = await ChatSpace.findAll({
+            where: { user_id: userId },
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM documents AS d
+                            WHERE d.chat_space_id = "ChatSpace".id AND d.type = 'url'
+                        )`),
+                        'link_count'
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM documents AS d
+                            WHERE d.chat_space_id = "ChatSpace".id AND d.type != 'url'
+                        )`),
+                        'document_count'
+                    ]
+                ]
+            }
+        });
         res.json(chatSpaces);
     } catch (error) {
+        console.error('getChatSpaces error:', error);
         res.status(500).json({ error: 'Server error' });
     }
 };
@@ -57,7 +81,29 @@ export const getChatSpace = async (req: any, res: Response) => {
         const { id } = req.params;
         const userId = req.user.id;
 
-        const chatSpace = await ChatSpace.findOne({ where: { id, user_id: userId } });
+        const chatSpace = await ChatSpace.findOne({
+            where: { id, user_id: userId },
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM documents AS d
+                            WHERE d.chat_space_id = "ChatSpace".id AND d.type = 'url'
+                        )`),
+                        'link_count'
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM documents AS d
+                            WHERE d.chat_space_id = "ChatSpace".id AND d.type != 'url'
+                        )`),
+                        'document_count'
+                    ]
+                ]
+            }
+        });
         if (!chatSpace) {
             return res.status(404).json({ error: 'Chat space not found' });
         }

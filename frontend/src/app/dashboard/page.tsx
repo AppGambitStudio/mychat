@@ -29,6 +29,9 @@ interface ChatSpace {
     description: string;
     status: string;
     message_count: number;
+    link_count?: number;
+    document_count?: number;
+    data_usage_bytes?: number;
     endpoint_slug: string;
 }
 
@@ -197,6 +200,9 @@ export default function DashboardPage() {
                                     <CardTitle className="text-xl font-bold line-clamp-1" title={space.name}>
                                         {space.name}
                                     </CardTitle>
+                                    <p className="text-sm text-muted-foreground line-clamp-2">
+                                        {space.description || 'No description provided.'}
+                                    </p>
                                     <Badge variant={getStatusVariant(space.status)} className="capitalize">
                                         {getStatusLabel(space.status)}
                                     </Badge>
@@ -205,13 +211,31 @@ export default function DashboardPage() {
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1">
-                            <div className="flex items-baseline space-x-2">
-                                <span className="text-3xl font-bold">{space.message_count}</span>
-                                <span className="text-sm text-muted-foreground">messages processed</span>
+                            <div className="space-y-4">
+                                <div className="flex items-baseline space-x-2">
+                                    <span className="text-3xl font-bold">{space.message_count}</span>
+                                    <span className="text-sm text-muted-foreground uppercase tracking-wider font-semibold">Messages</span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                                        <ExternalLink className="h-3.5 w-3.5 text-blue-500" />
+                                        <span className="font-medium">{space.link_count || 0}</span>
+                                        <span className="text-muted-foreground">Links</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 p-2 rounded-md bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                                        <Plus className="h-3.5 w-3.5 text-green-500" />
+                                        <span className="font-medium">{space.document_count || 0}</span>
+                                        <span className="text-muted-foreground">Docs</span>
+                                    </div>
+                                </div>
+
+                                <div className="text-[10px] text-muted-foreground bg-gray-50/50 dark:bg-gray-800/30 px-2 py-1 rounded inline-block">
+                                    Usage: {((space.data_usage_bytes || 0) / (1024 * 1024)).toFixed(2)} MB / 5 MB
+                                </div>
+
+
                             </div>
-                            <p className="mt-4 text-sm text-muted-foreground line-clamp-3">
-                                {space.description || 'No description provided.'}
-                            </p>
                         </CardContent>
                         <CardFooter className="flex items-center gap-2 pt-4 border-t bg-gray-50/50 dark:bg-gray-900/50">
                             <Button variant="outline" size="sm" asChild className="flex-1">
