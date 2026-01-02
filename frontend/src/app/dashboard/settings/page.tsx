@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import toast from 'react-hot-toast';
+import { api } from '@/lib/api';
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -29,22 +30,19 @@ export default function SettingsPage() {
 
     const fetchSettings = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:6002/api/settings', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const data = await api.get<any>('/settings');
+            setSettings({
+                responseTone: data.responseTone || 'professional',
+                kbConnectorUrl: data.kbConnectorUrl || '',
+                kbConnectorApiKey: data.kbConnectorApiKey || '',
+                kbConnectorActive: data.kbConnectorActive || false
             });
-            if (res.ok) {
-                const data = await res.json();
-                setSettings({
-                    responseTone: data.responseTone || 'professional',
-                    kbConnectorUrl: data.kbConnectorUrl || '',
-                    kbConnectorApiKey: data.kbConnectorApiKey || '',
-                    kbConnectorActive: data.kbConnectorActive || false
-                });
-            }
         } catch (error) {
             console.error('Failed to fetch settings', error);
-            toast.error('Failed to load settings');
+            // Redirection is handled by the api utility for 401/403
+            if (!(error instanceof Error && error.message === 'Session expired')) {
+                toast.error('Failed to load settings');
+            }
         } finally {
             setLoading(false);
         }
@@ -53,19 +51,12 @@ export default function SettingsPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:6002/api/settings', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(settings)
-            });
-            if (!res.ok) throw new Error('Failed to save');
+            await api.put('/settings', settings);
             toast.success('Settings saved successfully');
         } catch (error) {
-            toast.error('Failed to save settings');
+            if (!(error instanceof Error && error.message === 'Session expired')) {
+                toast.error('Failed to save settings');
+            }
         } finally {
             setSaving(false);
         }
@@ -107,6 +98,60 @@ export default function SettingsPage() {
                             </div>
                         </div>
                     </CardContent>
+                </Card>
+
+                {/* MCP Integration Section */}
+                <Card className="relative overflow-hidden border-purple-100 dark:border-purple-900/40 bg-gradient-to-br from-white to-purple-50/30 dark:from-black dark:to-purple-900/10">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <CardTitle>MCP Integration</CardTitle>
+                                    <Badge variant="outline" className="text-[10px] uppercase tracking-wider bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800">Coming Soon</Badge>
+                                </div>
+                                <CardDescription>Connect multiple Model Context Protocol (MCP) servers for private/local data access.</CardDescription>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="opacity-60 blur-[1px] grayscale-[0.5] pointer-events-none">
+                        <div className="space-y-6">
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {[1, 2].map((i) => (
+                                    <div key={i} className="p-4 border rounded-xl bg-white/50 dark:bg-gray-900/50 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-semibold text-sm">MCP Server #{i}</div>
+                                            <Badge variant="secondary" className="text-[10px]">Active</Badge>
+                                        </div>
+                                        <div className="text-xs text-muted-foreground truncate">http://localhost:300{i}/mcp</div>
+                                        <div className="flex gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-green-500" />
+                                            <div className="text-[10px] text-muted-foreground">Connected</div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div className="p-4 border border-dashed rounded-xl flex flex-col items-center justify-center text-muted-foreground bg-gray-50/50 dark:bg-gray-900/30">
+                                    <div className="text-xl mb-1">+</div>
+                                    <div className="text-[10px]">Add Server</div>
+                                </div>
+                            </div>
+
+                            <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/50">
+                                <h4 className="text-xs font-bold text-purple-700 dark:text-purple-300 mb-1 uppercase tracking-tight">Why MCP?</h4>
+                                <p className="text-xs text-purple-600/80 dark:text-purple-400/80 leading-relaxed">
+                                    Integrate with local files, databases, and private APIs securely. Your data stays in your infrastructure while providing context to the AI.
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+
+                    {/* Coming Soon Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center z-10 bg-purple-50/10 dark:bg-purple-900/5 backdrop-blur-[1px]">
+                        <div className="text-center p-6 bg-white/40 dark:bg-black/40 backdrop-blur-md rounded-2xl border border-white/20 dark:border-purple-800/20 shadow-2xl max-w-sm mx-4">
+                            <div className="mb-3 text-3xl">🚀</div>
+                            <h3 className="text-xl font-black mb-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400">Private Data Integration</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">We're adding support for private MCP servers. Stay tuned!</p>
+                        </div>
+                    </div>
                 </Card>
 
                 {/* Knowledgebase Connector Section */}

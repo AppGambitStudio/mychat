@@ -28,7 +28,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
         headers,
     });
 
-    if (response.status === 401) {
+    if (response.status === 401 || response.status === 403) {
         // Token expired or invalid
         localStorage.removeItem('token');
         if (typeof window !== 'undefined') {
@@ -70,5 +70,6 @@ export const api = {
     post: <T>(endpoint: string, body: any) => request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
     postForm: <T>(endpoint: string, formData: FormData) => request<T>(endpoint, { method: 'POST', body: formData }),
     patch: <T>(endpoint: string, body: any) => request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
+    put: <T>(endpoint: string, body: any) => request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
     delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
 };

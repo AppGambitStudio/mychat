@@ -21,6 +21,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import toast from 'react-hot-toast';
+import { api } from '@/lib/api';
 
 interface ChatSpace {
     id: string;
@@ -39,15 +40,9 @@ export default function DashboardPage() {
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const fetchChatSpaces = async () => {
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch('http://localhost:6002/api/chat-spaces', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setChatSpaces(data);
-            }
+            const data = await api.get<ChatSpace[]>('/chat-spaces');
+            setChatSpaces(data);
         } catch (error) {
             console.error('Failed to fetch chat spaces', error);
         }
@@ -59,42 +54,24 @@ export default function DashboardPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch('http://localhost:6002/api/chat-spaces', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ name: newName, description: newDescription }),
-            });
-
-            if (res.ok) {
-                setIsCreateOpen(false);
-                setNewName('');
-                setNewDescription('');
-                fetchChatSpaces();
-            }
+            await api.post('/chat-spaces', { name: newName, description: newDescription });
+            setIsCreateOpen(false);
+            setNewName('');
+            setNewDescription('');
+            fetchChatSpaces();
         } catch (error) {
             console.error('Failed to create chat space', error);
+            toast.error('Failed to create chat space');
         }
     };
 
     const handleDelete = async () => {
         if (!deleteId) return;
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`http://localhost:6002/api/chat-spaces/${deleteId}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                fetchChatSpaces();
-                toast.success('Chat space deleted successfully');
-            } else {
-                toast.error('Failed to delete chat space');
-            }
+            await api.delete(`/chat-spaces/${deleteId}`);
+            fetchChatSpaces();
+            toast.success('Chat space deleted successfully');
         } catch (error) {
             console.error('Failed to delete chat space', error);
             toast.error('Failed to delete chat space');

@@ -34,9 +34,14 @@ export default function DashboardLayout({
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                if (res.status === 401) {
+                if (res.status === 401 || res.status === 403) {
                     localStorage.removeItem('token');
                     router.push('/login');
+                } else if (!res.ok) {
+                    // Other errors (e.g. 500) might not mean the session is invalid, 
+                    // but we should probably still consider redirecting if we can't verify.
+                    // For now, if it's not unauthorized, we allow loading but logs will show issues.
+                    setIsLoading(false);
                 } else {
                     setIsLoading(false);
                 }

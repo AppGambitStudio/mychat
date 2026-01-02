@@ -497,23 +497,9 @@ export default function ChatSpaceDetailPage() {
                                         // Optimistic update
                                         setChatSpace({ ...chatSpace, widget_status: newStatus } as any);
 
-                                        const token = localStorage.getItem('token');
                                         try {
-                                            const res = await fetch(`http://localhost:6002/api/chat-spaces/${id}`, {
-                                                method: 'PATCH',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    Authorization: `Bearer ${token}`,
-                                                },
-                                                body: JSON.stringify({ widget_status: newStatus }),
-                                            });
-                                            if (res.ok) {
-                                                toast.success('Status updated');
-                                            } else {
-                                                const data = await res.json().catch(() => ({}));
-                                                toast.error(`Failed to update status: ${data.error || res.statusText}`);
-                                                fetchChatSpace(); // Revert
-                                            }
+                                            await api.patch(`/chat-spaces/${id}`, { widget_status: newStatus });
+                                            toast.success('Status updated');
                                         } catch (err: any) {
                                             toast.error(`Failed to update status: ${err.message}`);
                                             fetchChatSpace(); // Revert
