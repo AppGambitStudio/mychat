@@ -7,7 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import toast from 'react-hot-toast';
+<<<<<<< HEAD
 import { api } from '@/lib/api';
+=======
+import { API_BASE_URL } from '@/lib/utils';
+>>>>>>> 15092db05ee2d77191c8844f6a093fb52ddfe28e
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -30,12 +34,18 @@ export default function SettingsPage() {
 
     const fetchSettings = async () => {
         try {
+<<<<<<< HEAD
             const data = await api.get<any>('/settings');
             setSettings({
                 responseTone: data.responseTone || 'professional',
                 kbConnectorUrl: data.kbConnectorUrl || '',
                 kbConnectorApiKey: data.kbConnectorApiKey || '',
                 kbConnectorActive: data.kbConnectorActive || false
+=======
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE_URL}/settings`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+>>>>>>> 15092db05ee2d77191c8844f6a093fb52ddfe28e
             });
         } catch (error) {
             console.error('Failed to fetch settings', error);
@@ -51,7 +61,20 @@ export default function SettingsPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
+<<<<<<< HEAD
             await api.put('/settings', settings);
+=======
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE_URL}/settings`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(settings)
+            });
+            if (!res.ok) throw new Error('Failed to save');
+>>>>>>> 15092db05ee2d77191c8844f6a093fb52ddfe28e
             toast.success('Settings saved successfully');
         } catch (error) {
             if (!(error instanceof Error && error.message === 'Session expired')) {

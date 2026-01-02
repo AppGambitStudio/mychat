@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Users, MessageSquare, Eye, Activity } from 'lucide-react';
-
+import { API_BASE_URL } from '@/lib/utils';
 
 interface AnalyticsTabProps {
     chatSpaceId: string;
@@ -17,7 +17,7 @@ export default function AnalyticsTab({ chatSpaceId }: AnalyticsTabProps) {
         const fetchStats = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`http://localhost:6002/api/chat-spaces/${chatSpaceId}/analytics`, {
+                const res = await fetch(`${API_BASE_URL}/chat-spaces/${chatSpaceId}/analytics`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 if (!res.ok) throw new Error('Failed to fetch');

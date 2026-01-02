@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import toast from 'react-hot-toast';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6002/api';
+import { API_BASE_URL } from './utils';
+// console.log('API_BASE_URL:', API_BASE_URL);
 
 interface RequestOptions extends RequestInit {
     headers?: Record<string, string>;

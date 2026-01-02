@@ -6,6 +6,9 @@ import { motion } from 'framer-motion';
 import { Bot, FileText, Globe, Code, Zap, Shield, ArrowRight, CheckCircle2, Sparkles, Cpu, BarChart } from 'lucide-react';
 
 export default function Home() {
+  const isProd = process.env.NODE_ENV === "production";
+  console.log("IS PROD page:", isProd);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

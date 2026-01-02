@@ -1,16 +1,11 @@
-version: '3.8'
+version: "3.9"
 
 services:
   backend:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile.dev
+    image: 701604549018.dkr.ecr.ap-south-1.amazonaws.com/mychat_backend:latestarm
     container_name: mychat_backend
     ports:
       - "6002:6002"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
     environment:
       - PORT=6002
       - JWT_SECRET=${JWT_SECRET}
@@ -21,28 +16,21 @@ services:
       - DB_HOST=${DB_HOST:-localhost}
       - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-    restart: always
+    # restart: always
     networks:
       - mychat-network
 
   frontend:
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile.dev
+    image: 701604549018.dkr.ecr.ap-south-1.amazonaws.com/mychat_frontend:latestarm
     container_name: mychat_frontend
     ports:
       - "6001:6001"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     environment:
-      - NEXT_PUBLIC_API_BASE_URL=http://localhost:6002
-    depends_on:
-      - backend
-    restart: always
-    command: npm run dev
+      - PORT=6001
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:6002}
+    # restart: always
     networks:
-      - mychat-network
+     - mychat-network
 
 networks:
   mychat-network:

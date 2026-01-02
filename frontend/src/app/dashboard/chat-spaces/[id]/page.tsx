@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -26,6 +27,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import AnalyticsTab from '@/components/AnalyticsTab';
 import { api } from '@/lib/api';
+import { API_BASE_URL, API_DOMAIN_URL } from '@/lib/utils';
 
 interface Document {
     id: string;
@@ -234,7 +236,7 @@ export default function ChatSpaceDetailPage() {
             // OR use api.post if we consider this a dashboard action.
             // Since it is a PREVIEW, we can use api.post. However, the route is /api/widget/...
 
-            const res = await fetch(`http://localhost:6002/api/widget/${chatSpace.endpoint_slug}/chat`, {
+            const res = await fetch(`${API_BASE_URL}/widget/${chatSpace.endpoint_slug}/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: userMsg.content }),
@@ -498,8 +500,26 @@ export default function ChatSpaceDetailPage() {
                                         setChatSpace({ ...chatSpace, widget_status: newStatus } as any);
 
                                         try {
+<<<<<<< HEAD
                                             await api.patch(`/chat-spaces/${id}`, { widget_status: newStatus });
                                             toast.success('Status updated');
+=======
+                                            const res = await fetch(`${API_BASE_URL}/chat-spaces/${id}`, {
+                                                method: 'PATCH',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    Authorization: `Bearer ${token}`,
+                                                },
+                                                body: JSON.stringify({ widget_status: newStatus }),
+                                            });
+                                            if (res.ok) {
+                                                toast.success('Status updated');
+                                            } else {
+                                                const data = await res.json().catch(() => ({}));
+                                                toast.error(`Failed to update status: ${data.error || res.statusText}`);
+                                                fetchChatSpace(); // Revert
+                                            }
+>>>>>>> 15092db05ee2d77191c8844f6a093fb52ddfe28e
                                         } catch (err: any) {
                                             toast.error(`Failed to update status: ${err.message}`);
                                             fetchChatSpace(); // Revert
@@ -518,7 +538,7 @@ export default function ChatSpaceDetailPage() {
                             <div className="space-y-2">
                                 <Label>Embed Code</Label>
                                 <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-md font-mono text-sm overflow-x-auto">
-                                    {`<script src="${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6002'}/widget.js" data-chat-space="${chatSpace.endpoint_slug}"></script>`}
+                                    {`<script src="${API_DOMAIN_URL || 'http://localhost:6002'}/widget.js" data-chat-space="${chatSpace.endpoint_slug}"></script>`}
                                 </div>
                             </div>
                         </CardContent>
