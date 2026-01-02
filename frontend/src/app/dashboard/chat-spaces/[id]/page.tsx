@@ -500,10 +500,6 @@ export default function ChatSpaceDetailPage() {
                                         setChatSpace({ ...chatSpace, widget_status: newStatus } as any);
 
                                         try {
-<<<<<<< HEAD
-                                            await api.patch(`/chat-spaces/${id}`, { widget_status: newStatus });
-                                            toast.success('Status updated');
-=======
                                             const res = await fetch(`${API_BASE_URL}/chat-spaces/${id}`, {
                                                 method: 'PATCH',
                                                 headers: {
@@ -519,7 +515,6 @@ export default function ChatSpaceDetailPage() {
                                                 toast.error(`Failed to update status: ${data.error || res.statusText}`);
                                                 fetchChatSpace(); // Revert
                                             }
->>>>>>> 15092db05ee2d77191c8844f6a093fb52ddfe28e
                                         } catch (err: any) {
                                             toast.error(`Failed to update status: ${err.message}`);
                                             fetchChatSpace(); // Revert
